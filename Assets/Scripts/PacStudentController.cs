@@ -5,7 +5,10 @@ using UnityEngine.Tilemaps;
 
 public class PacStudentController : MonoBehaviour
 {
-    public List<Tilemap> tilemaps; // List of all tilemaps
+    private AudioSource audioSource;
+    public AudioClip audioClip;
+    public Animator animator;
+    public List<Tilemap> tilemaps;
     public float moveSpeed = 5f;
     private Vector3 targetPosition;
     private Vector3 startingPosition;
@@ -13,19 +16,52 @@ public class PacStudentController : MonoBehaviour
     private KeyCode lastInput;
     private KeyCode currentInput;
     private float startTime;
+    public ParticleSystem snowParticles;
+
+    public float particleRate = 20.0f;
+
+    private void Start()
+    {
+        audioSource = GetComponent<AudioSource>();
+    }
 
     private void Update()
     {
         if (!isLerping)
         {
-            if (Input.GetKey(KeyCode.W))
+            if (Input.GetKey(KeyCode.W)) 
+            {
+                animator.SetBool("moveUp", true);
+                animator.SetBool("moveDown", false);
+                animator.SetBool("moveLeft", false);
+                animator.SetBool("moveRight", false);
                 TryMove(Vector3.up, KeyCode.W);
+            }
             else if (Input.GetKey(KeyCode.A))
+            {
+                animator.SetBool("moveUp", false);
+                animator.SetBool("moveDown", false);
+                animator.SetBool("moveLeft", true);
+                animator.SetBool("moveRight", false);
                 TryMove(Vector3.left, KeyCode.A);
+            }
             else if (Input.GetKey(KeyCode.S))
+            {
+                animator.SetBool("moveUp", false);
+                animator.SetBool("moveDown", true);
+                animator.SetBool("moveLeft", false);
+                animator.SetBool("moveRight", false);
                 TryMove(Vector3.down, KeyCode.S);
+            }
             else if (Input.GetKey(KeyCode.D))
+            {
+                animator.SetBool("moveUp", false);
+                animator.SetBool("moveDown", false);
+                animator.SetBool("moveLeft", false);
+                animator.SetBool("moveRight", true);
                 TryMove(Vector3.right, KeyCode.D);
+            }
+
         }
 
         if (isLerping)
@@ -65,10 +101,10 @@ public class PacStudentController : MonoBehaviour
 
             if (tile != null && (tile.name != "FlashingFish" && tile.name != "Fish"))
             {
-                return false; // Return false if a non-walkable tile is found in any tilemap
+                return false;
             }
         }
-        return true; // Return true if all tilemaps have walkable tiles
+        return true;
     }
 
     private IEnumerator LerpToPosition()
@@ -76,12 +112,21 @@ public class PacStudentController : MonoBehaviour
         isLerping = true;
         float distance = Vector3.Distance(transform.position, targetPosition);
         float duration = distance / moveSpeed;
+        var emission = snowParticles.emission;
+
+        emission.rateOverTime = particleRate;
+
+        if (audioSource != null)
+        {
+            audioSource.PlayOneShot(audioClip);
+        }
 
         while (Time.time - startTime < duration)
         {
             yield return null;
         }
-
+        
+        emission.rateOverTime = 0;
         isLerping = false;
     }
 }
