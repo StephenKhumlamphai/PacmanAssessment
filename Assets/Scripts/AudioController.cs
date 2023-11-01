@@ -19,7 +19,6 @@ public class AudioController : MonoBehaviour
     {
         if (!audioSource.isPlaying)
         {
-            // Switch to the other audio clip when the current one finishes
             if (audioSource.clip == audioClip1)
                 PlayAudioClip(audioClip2);
             else

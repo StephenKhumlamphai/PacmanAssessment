@@ -4,63 +4,48 @@ using UnityEngine;
 
 public class CherryController : MonoBehaviour
 {
-    public GameObject cherryPrefab; // Reference to the cherry prefab
-    public Transform levelCenter; // Center point of the level
-    public float cherrySpawnInterval = 10.0f; // Time interval for spawning cherries
-    public float cherrySpeed = 5.0f; // Speed at which the cherry moves
-
+    public GameObject eggPrefab;
+    public Transform levelCenter;
+    public float eggSpawnInterval = 10.0f;
+    public float eggSpeed = 5.0f;
     private Camera mainCamera;
     private float spawnTimer = 0.0f;
 
     void Start()
     {
         mainCamera = Camera.main;
-
-        // Start spawning cherries immediately
-        spawnTimer = cherrySpawnInterval;
+        spawnTimer = eggSpawnInterval;
     }
 
     void Update()
     {
         spawnTimer += Time.deltaTime;
 
-        // Check if it's time to spawn a cherry
-        if (spawnTimer >= cherrySpawnInterval)
+        if (spawnTimer >= eggSpawnInterval)
         {
-            SpawnCherry();
-            spawnTimer = 0.0f; // Reset the timer
+            SpawnEgg();
+            spawnTimer = 0.0f;
         }
     }
 
-    void SpawnCherry()
+    void SpawnEgg()
     {
-        // Determine a random spawn point just outside of the camera view
         Vector3 spawnPoint = GetRandomSpawnPoint();
-
-        // Instantiate the cherry at the spawn point
-        GameObject cherry = Instantiate(cherryPrefab, spawnPoint, Quaternion.identity);
-
-        // Calculate the direction for the cherry to move
+        GameObject egg = Instantiate(eggPrefab, spawnPoint, Quaternion.identity);
         Vector3 moveDirection = (levelCenter.position - spawnPoint).normalized;
-
-        // Get the cherry's Rigidbody2D and set its velocity for linear lerping
-        Rigidbody2D cherryRigidbody = cherry.GetComponent<Rigidbody2D>();
-        cherryRigidbody.velocity = moveDirection * cherrySpeed;
-
-        // Start a coroutine to check if the cherry is out of camera view and destroy it
-        StartCoroutine(CheckCherryOutOfBounds(cherry));
+        Rigidbody2D eggRigidbody = egg.GetComponent<Rigidbody2D>();
+        eggRigidbody.velocity = moveDirection * eggSpeed;
+        StartCoroutine(CheckEggOutOfBounds(egg));
     }
 
-    IEnumerator CheckCherryOutOfBounds(GameObject cherry)
+    IEnumerator CheckEggOutOfBounds(GameObject egg)
     {
-        // Check if the cherry is still within the camera view
-        while (IsInCameraView(cherry.transform.position))
+        while (IsInCameraView(egg.transform.position))
         {
             yield return null;
         }
 
-        // Cherry is out of camera view, destroy it
-        Destroy(cherry);
+        Destroy(egg);
     }
 
     bool IsInCameraView(Vector3 position)
@@ -74,7 +59,6 @@ public class CherryController : MonoBehaviour
         float cameraHeight = 2f * mainCamera.orthographicSize;
         float cameraWidth = cameraHeight * mainCamera.aspect;
 
-        // Define possible spawn sides
         List<Vector3> spawnSides = new List<Vector3>
         {
             new Vector3(-cameraWidth * 0.5f, Random.Range(-cameraHeight * 0.5f, cameraHeight * 0.5f), 0),
@@ -83,7 +67,6 @@ public class CherryController : MonoBehaviour
             new Vector3(Random.Range(-cameraWidth * 0.5f, cameraWidth * 0.5f), cameraHeight * 0.5f, 0)
         };
 
-        // Randomly select one of the spawn sides
         return spawnSides[Random.Range(0, spawnSides.Count)];
     }
 }
